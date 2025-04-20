@@ -5,50 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جهات الاتصال</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .contact-list { list-style-type: none; padding: 0; }
-        .contact-item { background-color: #fff; margin: 10px 0; padding: 10px; border-radius: 8px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .contact-item {
+            background-color: white;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-<h1>عرض جهات الاتصال</h1>
-<button onclick="requestPermission()">طلب الأذونات</button>
+    <h1>جهات الاتصال</h1>
+    <button onclick="getContacts()">عرض جهات الاتصال</button>
 
-<ul id="contactList" class="contact-list"></ul>
+    <ul id="contactList"></ul>
 
-<script>
-    function requestPermission() {
-        // طلب الأذونات عبر WebView JavaScript Interface
-        if (typeof Android !== 'undefined' && Android.requestPermissions) {
-            Android.requestPermissions();
-        } else {
-            alert('الأذونات غير مدعومة');
+    <script>
+        function getContacts() {
+            if (typeof Android !== 'undefined' && Android.getContacts) {
+                const jsonContacts = Android.getContacts(); // يستدعي الدالة من WebView Interface
+                try {
+                    const contacts = JSON.parse(jsonContacts);
+                    const list = document.getElementById('contactList');
+                    list.innerHTML = '';
+
+                    contacts.forEach(contact => {
+                        const item = document.createElement('li');
+                        item.className = 'contact-item';
+                        item.innerHTML = `
+                            <strong>${contact.name}</strong><br>
+                            رقم الهاتف: ${contact.phone}
+                        `;
+                        list.appendChild(item);
+                    });
+                } catch (e) {
+                    alert('خطأ في قراءة البيانات: ' + e.message);
+                }
+            } else {
+                alert('لا يمكن الوصول إلى جهات الاتصال.');
+            }
         }
-    }
-
-    // عند قبول الأذونات، سيتم هنا جلب جهات الاتصال
-    document.addEventListener('DOMContentLoaded', function () {
-        if (navigator.contacts) {
-            navigator.contacts.find(["displayName", "phoneNumbers"], function(contacts) {
-                let contactList = document.getElementById('contactList');
-                contacts.forEach(function(contact) {
-                    let listItem = document.createElement('li');
-                    listItem.className = 'contact-item';
-                    listItem.innerHTML = `
-                        <h3>${contact.displayName}</h3>
-                        <p>رقم الهاتف: ${contact.phoneNumbers ? contact.phoneNumbers[0].value : 'لا يوجد رقم هاتف'}</p>
-                    `;
-                    contactList.appendChild(listItem);
-                });
-            }, function(error) {
-                alert("حدث خطأ أثناء جلب جهات الاتصال: " + error);
-            });
-        } else {
-            alert("متصفحك لا يدعم الوصول إلى جهات الاتصال.");
-        }
-    });
-</script>
+    </script>
 
 </body>
 </html>
