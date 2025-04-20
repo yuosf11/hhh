@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جهات الاتصال</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .contact-list { list-style-type: none; padding: 0; }
+        .contact-item { background-color: #fff; margin: 10px 0; padding: 10px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<h1>عرض جهات الاتصال</h1>
+<button onclick="requestPermission()">طلب الأذونات</button>
+
+<ul id="contactList" class="contact-list"></ul>
+
+<script>
+    function requestPermission() {
+        // طلب الأذونات عبر WebView JavaScript Interface
+        if (typeof Android !== 'undefined' && Android.requestPermissions) {
+            Android.requestPermissions();
+        } else {
+            alert('الأذونات غير مدعومة');
+        }
+    }
+
+    // عند قبول الأذونات، سيتم هنا جلب جهات الاتصال
+    document.addEventListener('DOMContentLoaded', function () {
+        if (navigator.contacts) {
+            navigator.contacts.find(["displayName", "phoneNumbers"], function(contacts) {
+                let contactList = document.getElementById('contactList');
+                contacts.forEach(function(contact) {
+                    let listItem = document.createElement('li');
+                    listItem.className = 'contact-item';
+                    listItem.innerHTML = `
+                        <h3>${contact.displayName}</h3>
+                        <p>رقم الهاتف: ${contact.phoneNumbers ? contact.phoneNumbers[0].value : 'لا يوجد رقم هاتف'}</p>
+                    `;
+                    contactList.appendChild(listItem);
+                });
+            }, function(error) {
+                alert("حدث خطأ أثناء جلب جهات الاتصال: " + error);
+            });
+        } else {
+            alert("متصفحك لا يدعم الوصول إلى جهات الاتصال.");
+        }
+    });
+</script>
+
+</body>
+</html>
